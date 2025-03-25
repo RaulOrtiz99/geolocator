@@ -3,49 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GeoIP Tool | Geolocalización de IPs</title>
+    <title>GeoIP Tool | Geolocalización Avanzada de IPs</title>
     <!-- Bootstrap 5 con íconos -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Animate.css y AOS (Animate On Scroll) -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Animate.css, AOS y Glide.js -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Particle.js -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <style>
         :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --primary-light: #a5b4fc;
-            --secondary: #10b981;
-            --dark: #1e293b;
-            --light: #f8fafc;
-            --gray: #94a3b8;
-            --card-bg: #ffffff;
-            --success: #10b981;
-            --error: #ef4444;
-            --warning: #f59e0b;
-            --gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            --primary: #6c5ce7;
+            --primary-dark: #5649c0;
+            --primary-light: #a29bfe;
+            --secondary: #00b894;
+            --accent: #fd79a8;
+            --dark: #2d3436;
+            --light: #f5f6fa;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --glass: rgba(255, 255, 255, 0.15);
+            --gradient: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+            --gradient-accent: linear-gradient(135deg, #6c5ce7 0%, #fd79a8 100%);
         }
         
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Poppins', sans-serif;
             background-color: var(--light);
             color: var(--dark);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
+            background-image: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2072&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            opacity: 0.3;
+        }
+        
+        .navbar {
+            backdrop-filter: blur(10px);
+            background-color: var(--glass);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
         }
         
         .navbar-brand {
             font-weight: 700;
-            color: var(--dark);
-            transition: all 0.3s ease;
+            color: white;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: flex;
+            align-items: center;
         }
         
         .navbar-brand:hover {
-            color: var(--primary);
-            transform: translateY(-2px);
+            color: var(--primary-light);
+            transform: translateY(-3px);
+        }
+        
+        .navbar-brand img {
+            height: 30px;
+            margin-right: 10px;
+            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.2));
         }
         
         .main-container {
@@ -57,27 +87,40 @@
         
         .card {
             border: none;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(108, 92, 231, 0.2);
             overflow: hidden;
             background: var(--card-bg);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            transform: perspective(1000px) rotateY(0deg);
+            backdrop-filter: blur(10px);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: perspective(1000px) rotateY(0deg) scale(1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         .card:hover {
-            transform: perspective(1000px) rotateY(5deg) translateY(-10px);
-            box-shadow: 0 15px 35px rgba(99, 102, 241, 0.2);
+            transform: perspective(1000px) rotateY(5deg) translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(108, 92, 231, 0.3);
         }
         
         .card-header {
-            background: var(--gradient);
+            background: var(--gradient-accent);
             color: white;
-            padding: 1.5rem;
+            padding: 2rem;
             text-align: center;
             border-bottom: none;
             position: relative;
             overflow: hidden;
+        }
+        
+        .card-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('https://images.unsplash.com/photo-1635070041078-e363dbe005cb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80') center/cover;
+            opacity: 0.1;
         }
         
         .card-header::after {
@@ -87,51 +130,72 @@
             left: -50%;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
             transform: rotate(30deg);
-            animation: shine 3s infinite;
+            animation: shine 4s infinite;
         }
         
         .card-title {
             font-weight: 700;
             margin-bottom: 0.5rem;
-            font-size: 1.5rem;
+            font-size: 2rem;
             position: relative;
             z-index: 1;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         
         .card-subtitle {
             font-weight: 400;
             opacity: 0.9;
-            font-size: 0.9rem;
+            font-size: 1rem;
             position: relative;
             z-index: 1;
         }
         
         .card-body {
-            padding: 2rem;
+            padding: 2.5rem;
+            background: var(--card-bg);
         }
         
         .btn-primary {
             background: var(--gradient);
             border: none;
             font-weight: 600;
-            padding: 0.75rem 1.5rem;
-            border-radius: 12px;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            box-shadow: 0 4px 6px rgba(99, 102, 241, 0.1);
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
             position: relative;
             overflow: hidden;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
         }
         
         .btn-primary:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 15px rgba(99, 102, 241, 0.2);
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            transform: translateY(-5px) scale(1.03);
+            box-shadow: 0 10px 25px rgba(108, 92, 231, 0.4);
+            background: linear-gradient(135deg, #5649c0 0%, #8c7ae6 100%);
         }
         
         .btn-primary:active {
-            transform: translateY(1px);
+            transform: translateY(2px);
+        }
+        
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+        
+        .btn-primary:hover::after {
+            transform: translateX(100%);
         }
         
         .file-input-container {
@@ -139,32 +203,44 @@
             overflow: hidden;
             display: inline-block;
             width: 100%;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
         }
         
         .file-input-label {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 1.5rem;
-            background-color: rgba(99, 102, 241, 0.05);
+            padding: 2rem;
+            background-color: rgba(108, 92, 231, 0.05);
             border: 2px dashed var(--primary-light);
-            border-radius: 12px;
+            border-radius: 15px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.4s ease;
+            position: relative;
         }
         
         .file-input-label:hover {
-            background-color: rgba(99, 102, 241, 0.1);
+            background-color: rgba(108, 92, 231, 0.1);
             border-color: var(--primary);
-            animation: pulse-border 1.5s infinite;
+            animation: pulse-border 2s infinite;
         }
         
         .file-input-label i {
-            margin-right: 12px;
+            margin-right: 15px;
             color: var(--primary);
-            font-size: 1.75rem;
+            font-size: 2rem;
             transition: all 0.3s ease;
+        }
+        
+        .file-input-label .file-preview {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.1;
+            z-index: 0;
         }
         
         #csv_file {
@@ -178,23 +254,25 @@
         }
         
         .progress-container {
-            background: rgba(248, 250, 252, 0.8);
-            border-radius: 12px;
+            background: rgba(245, 246, 250, 0.7);
+            border-radius: 15px;
             padding: 1.5rem;
-            margin-top: 1.5rem;
+            margin-top: 2rem;
             backdrop-filter: blur(5px);
-            border: 1px solid rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(108, 92, 231, 0.2);
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
         }
         
         .progress {
-            height: 12px;
-            border-radius: 6px;
-            background-color: #e2e8f0;
+            height: 15px;
+            border-radius: 10px;
+            background-color: rgba(108, 92, 231, 0.1);
             overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
         }
         
         .progress-bar {
-            background: var(--gradient);
+            background: var(--gradient-accent);
             transition: width 0.6s ease;
             position: relative;
         }
@@ -208,18 +286,20 @@
             bottom: 0;
             background: linear-gradient(90deg, 
                             rgba(255,255,255,0) 0%, 
-                            rgba(255,255,255,0.3) 50%, 
+                            rgba(255,255,255,0.4) 50%, 
                             rgba(255,255,255,0) 100%);
-            animation: progress-shine 2s infinite;
+            animation: progress-shine 1.5s infinite;
         }
         
         .status-message {
-            padding: 1rem;
-            border-radius: 12px;
+            padding: 1.2rem;
+            border-radius: 15px;
             font-weight: 500;
-            margin-top: 1.5rem;
+            margin-top: 2rem;
             text-align: center;
-            transition: all 0.4s ease;
+            transition: all 0.5s ease;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
         
         .download-link {
@@ -227,32 +307,52 @@
             align-items: center;
             justify-content: center;
             font-weight: 600;
-            padding: 0.75rem 1.5rem;
-            border-radius: 12px;
-            background-color: var(--success);
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            background: var(--gradient-accent);
             color: white !important;
             text-decoration: none;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
             width: 100%;
-            margin-top: 1rem;
-            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.1);
+            margin-top: 1.5rem;
+            box-shadow: 0 5px 15px rgba(253, 121, 168, 0.3);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            position: relative;
+            overflow: hidden;
         }
         
         .download-link:hover {
-            background-color: #0d9e6f;
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 15px rgba(16, 185, 129, 0.2);
-            color: white;
-            animation: bounce 0.5s;
+            transform: translateY(-5px) scale(1.03);
+            box-shadow: 0 10px 25px rgba(253, 121, 168, 0.4);
+            animation: none;
+        }
+        
+        .download-link::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+        
+        .download-link:hover::after {
+            transform: translateX(100%);
         }
         
         .footer {
-            background-color: var(--dark);
+            background: rgba(45, 52, 54, 0.9);
             color: white;
-            padding: 1.5rem;
+            padding: 2rem;
             text-align: center;
             font-size: 0.9rem;
             position: relative;
+            backdrop-filter: blur(5px);
         }
         
         .footer::before {
@@ -261,65 +361,106 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 3px;
-            background: var(--gradient);
+            height: 4px;
+            background: var(--gradient-accent);
         }
         
         .feature-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: rgba(99, 102, 241, 0.1);
+            width: 80px;
+            height: 80px;
+            border-radius: 25px;
+            background: rgba(108, 92, 231, 0.1);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 1.5rem;
+            margin: 0 auto 2rem;
             color: var(--primary);
-            font-size: 1.75rem;
-            transition: all 0.3s ease;
+            font-size: 2.5rem;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(108, 92, 231, 0.2);
+            border: 1px solid rgba(108, 92, 231, 0.2);
+            backdrop-filter: blur(5px);
         }
         
         .feature-icon:hover {
             transform: rotate(15deg) scale(1.1);
-            background: rgba(99, 102, 241, 0.2);
+            background: rgba(108, 92, 231, 0.2);
+            box-shadow: 0 15px 40px rgba(108, 92, 231, 0.3);
         }
         
         .developer-credit {
             display: inline-flex;
             align-items: center;
-            color: var(--gray);
+            color: var(--primary-light);
             text-decoration: none;
-            transition: all 0.3s ease;
-            margin-top: 1rem;
+            transition: all 0.4s ease;
+            margin-top: 1.5rem;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            background: rgba(108, 92, 231, 0.1);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(108, 92, 231, 0.2);
         }
         
         .developer-credit:hover {
-            color: var(--primary);
-            transform: translateY(-2px);
+            color: white;
+            background: rgba(108, 92, 231, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.2);
         }
         
         .developer-credit i {
-            margin-right: 5px;
+            margin-right: 8px;
+            font-size: 1.2rem;
+        }
+        
+        .glide__slides {
+            align-items: center;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(5px);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(108, 92, 231, 0.2);
+        }
+        
+        .feature-card i {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
         
         @media (max-width: 768px) {
             .card-body {
-                padding: 1.5rem;
+                padding: 1.8rem;
             }
             
             .card-title {
-                font-size: 1.3rem;
+                font-size: 1.5rem;
             }
             
             .feature-icon {
-                width: 50px;
-                height: 50px;
-                font-size: 1.5rem;
+                width: 70px;
+                height: 70px;
+                font-size: 2rem;
             }
             
             .card:hover {
                 transform: none;
-                box-shadow: 0 10px 30px rgba(99, 102, 241, 0.1);
+                box-shadow: 0 15px 50px rgba(108, 92, 231, 0.2);
             }
         }
         
@@ -336,22 +477,31 @@
         }
         
         @keyframes shine {
-            0% { transform: rotate(30deg) translate(-10%, -10%); }
-            100% { transform: rotate(30deg) translate(10%, 10%); }
+            0% { transform: rotate(30deg) translate(-30%, -30%); }
+            100% { transform: rotate(30deg) translate(30%, 30%); }
         }
         
         @keyframes bounce {
-            0%, 100% { transform: translateY(0) scale(1.02); }
-            50% { transform: translateY(-5px) scale(1.05); }
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-10px) scale(1.05); }
         }
         
         @keyframes float {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+            50% { transform: translateY(-15px); }
+        }
+        
+        @keyframes float-x {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(-10px); }
         }
         
         .floating {
-            animation: float 3s ease-in-out infinite;
+            animation: float 4s ease-in-out infinite;
+        }
+        
+        .floating-x {
+            animation: float-x 5s ease-in-out infinite;
         }
         
         /* Efecto de onda al hacer clic */
@@ -363,26 +513,38 @@
         .ripple-effect {
             position: absolute;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.6);
             transform: scale(0);
-            animation: ripple 0.6s linear;
+            animation: ripple 0.8s linear;
             pointer-events: none;
         }
         
         @keyframes ripple {
             to {
-                transform: scale(2.5);
+                transform: scale(3);
                 opacity: 0;
             }
+        }
+        
+        /* Efecto de confeti */
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: var(--accent);
+            opacity: 0;
         }
     </style>
 </head>
 <body>
+    <!-- Fondo de partículas -->
+    <div id="particles-js"></div>
+
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <nav class="navbar navbar-expand-lg navbar-light">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="#" data-aos="fade-right">
-                <i class="bi bi-geo-alt-fill me-2" style="color: var(--primary);"></i>
+            <a class="navbar-brand" href="#" data-aos="fade-right">
+                <img src="https://cdn-icons-png.flaticon.com/512/2779/2779775.png" alt="GeoIP Logo">
                 GeoIP Tool
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -396,6 +558,9 @@
                     <li class="nav-item" data-aos="fade-left" data-aos-delay="200">
                         <a class="nav-link" href="#"><i class="bi bi-question-circle me-1"></i> Ayuda</a>
                     </li>
+                    <li class="nav-item" data-aos="fade-left" data-aos-delay="300">
+                        <a class="nav-link" href="#"><i class="bi bi-stars me-1"></i> Premium</a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -405,35 +570,61 @@
     <div class="main-container">
         <div class="container">
             <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="card animate__animated animate__fadeIn" data-aos="zoom-in">
+                <div class="col-lg-10">
+                    <div class="card animate__animated animate__fadeIn" data-aos="zoom-in" data-aos-delay="100">
                         <div class="card-header">
-                            <h1 class="card-title">Geolocalización de IPs</h1>
-                            <p class="card-subtitle">Procesa archivos CSV con direcciones IP para obtener datos geográficos</p>
+                            <h1 class="card-title">Geolocalización Avanzada de IPs</h1>
+                            <p class="card-subtitle">Transforma direcciones IP en información geográfica valiosa</p>
                         </div>
                         <div class="card-body">
-                            <div class="text-center mb-4">
+                            <div class="text-center mb-5">
                                 <div class="feature-icon floating">
-                                    <i class="bi bi-cloud-arrow-up"></i>
+                                    <img src="https://cdn-icons-png.flaticon.com/512/1005/1005141.png" style="width: 40px; height: 40px;" alt="Upload Icon">
                                 </div>
-                                <h3 class="mb-3" data-aos="fade-up">Cargar archivo CSV</h3>
-                                <p class="text-muted" data-aos="fade-up" data-aos-delay="100">Sube un archivo CSV con direcciones IP para comenzar el análisis</p>
+                                <h3 class="mb-3" data-aos="fade-up">Carga tu archivo CSV</h3>
+                                <p class="text-muted" data-aos="fade-up" data-aos-delay="100">Sube un archivo con direcciones IP y obtén datos geolocalizados en segundos</p>
                             </div>
                             
                             <form id="uploadForm" enctype="multipart/form-data" data-aos="fade-up" data-aos-delay="200">
                                 <div class="file-input-container">
                                     <label for="csv_file" class="file-input-label ripple">
-                                        <i class="bi bi-file-earmark-spreadsheet"></i>
-                                        <span id="file-label">Seleccionar archivo CSV</span>
+                                        <i class="bi bi-cloud-arrow-up-fill"></i>
+                                        <span id="file-label">Arrastra tu archivo CSV aquí o haz clic</span>
+                                        <img id="file-preview" class="file-preview d-none">
                                     </label>
                                     <input type="file" id="csv_file" name="csv_file" required accept=".csv">
                                 </div>
-                                <small class="text-muted d-block text-center mb-4" data-aos="fade-up" data-aos-delay="300">Formatos soportados: .csv (Máx. 10MB)</small>
+                                <small class="text-muted d-block text-center mb-4" data-aos="fade-up" data-aos-delay="300">Formatos soportados: .csv (Tamaño máximo: 20MB)</small>
                                 
                                 <button type="submit" class="btn btn-primary w-100 py-3 ripple" id="processButton" data-aos="fade-up" data-aos-delay="400">
-                                    <i class="bi bi-gear-fill me-2"></i> Procesar Archivo
+                                    <i class="bi bi-magic me-2"></i> Procesar Archivo
                                 </button>
                             </form>
+                            
+                            <!-- Características destacadas -->
+                            <div class="row mt-5" data-aos="fade-up">
+                                <div class="col-md-4 mb-4">
+                                    <div class="feature-card text-center h-100">
+                                        <i class="bi bi-globe"></i>
+                                        <h5>Global Coverage</h5>
+                                        <p class="text-muted">Datos precisos de ubicación en todo el mundo</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-4">
+                                    <div class="feature-card text-center h-100">
+                                        <i class="bi bi-lightning-charge"></i>
+                                        <h5>Procesamiento Rápido</h5>
+                                        <p class="text-muted">Analiza miles de IPs en segundos</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-4">
+                                    <div class="feature-card text-center h-100">
+                                        <i class="bi bi-shield-lock"></i>
+                                        <h5>Seguro y Privado</h5>
+                                        <p class="text-muted">Tus datos nunca se almacenan</p>
+                                    </div>
+                                </div>
+                            </div>
                             
                             <div class="progress-container mt-4 d-none animate__animated animate__fadeIn" id="progressContainer" data-aos="fade-up">
                                 <div class="d-flex justify-content-between mb-3">
@@ -444,7 +635,7 @@
                                     <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
                                 <p id="progressText" class="text-center text-muted mb-0">
-                                    <i class="bi bi-info-circle-fill me-2 animate-pulse" style="color: var(--primary);"></i>
+                                    <i class="bi bi-hourglass-split me-2 animate-pulse" style="color: var(--primary);"></i>
                                     <span>Procesando tu archivo, por favor espera...</span>
                                 </p>
                             </div>
@@ -452,12 +643,14 @@
                             <div id="message" class="status-message d-none animate__animated animate__fadeIn" data-aos="fade-up"></div>
                             
                             <a id="downloadLink" class="download-link d-none ripple" href="#" data-aos="fade-up">
-                                <i class="bi bi-download me-2"></i> Descargar resultados
+                                <i class="bi bi-cloud-arrow-down-fill me-2"></i> Descargar Resultados
                             </a>
                             
-                            <a href="https://github.com/RaulOrtiz99" target="_blank" class="developer-credit" data-aos="fade-up" data-aos-delay="500">
-                                <i class="bi bi-code-square"></i> Desarrollado por: RaulOrtiz99
-                            </a>
+                            <div class="text-center mt-4">
+                                <a href="https://github.com/RaulOrtiz99" target="_blank" class="developer-credit" data-aos="fade-up" data-aos-delay="500">
+                                    <i class="bi bi-github"></i> Desarrollado por: RaulOrtiz99
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -469,14 +662,30 @@
     <footer class="footer">
         <div class="container">
             <div class="row">
-                <div class="col-md-6 text-md-start">
-                    <p class="mb-0">© 2023 GeoIP Tool. Todos los derechos reservados.</p>
+                <div class="col-md-4 mb-4 mb-md-0 text-center text-md-start">
+                    <h5 class="mb-3">GeoIP Tool</h5>
+                    <p class="small">La solución más avanzada para geolocalización de direcciones IP.</p>
                 </div>
-                <div class="col-md-6 text-md-end">
-                    <p class="mb-0">
+                <div class="col-md-4 mb-4 mb-md-0 text-center">
+                    <h5 class="mb-3">Enlaces Rápidos</h5>
+                    <div class="d-flex justify-content-center">
+                        <a href="#" class="text-white mx-2"><i class="bi bi-file-text"></i></a>
+                        <a href="#" class="text-white mx-2"><i class="bi bi-shield-check"></i></a>
+                        <a href="#" class="text-white mx-2"><i class="bi bi-envelope"></i></a>
+                        <a href="https://github.com/RaulOrtiz99" target="_blank" class="text-white mx-2"><i class="bi bi-github"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-4 text-center text-md-end">
+                    <h5 class="mb-3">Legal</h5>
+                    <p class="small mb-0">
                         <a href="#" class="text-white text-decoration-none me-3">Términos</a>
                         <a href="#" class="text-white text-decoration-none">Privacidad</a>
                     </p>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-12 text-center">
+                    <p class="small mb-0">© 2023 GeoIP Tool. Todos los derechos reservados.</p>
                 </div>
             </div>
         </div>
@@ -489,9 +698,116 @@
     <script>
         // Inicializar AOS
         AOS.init({
-            duration: 800,
-            easing: 'ease-in-out',
+            duration: 1000,
+            easing: 'ease-in-out-quart',
             once: true
+        });
+
+        // Inicializar partículas
+        particlesJS("particles-js", {
+            "particles": {
+                "number": {
+                    "value": 80,
+                    "density": {
+                        "enable": true,
+                        "value_area": 800
+                    }
+                },
+                "color": {
+                    "value": "#6c5ce7"
+                },
+                "shape": {
+                    "type": "circle",
+                    "stroke": {
+                        "width": 0,
+                        "color": "#000000"
+                    },
+                    "polygon": {
+                        "nb_sides": 5
+                    }
+                },
+                "opacity": {
+                    "value": 0.5,
+                    "random": false,
+                    "anim": {
+                        "enable": false,
+                        "speed": 1,
+                        "opacity_min": 0.1,
+                        "sync": false
+                    }
+                },
+                "size": {
+                    "value": 3,
+                    "random": true,
+                    "anim": {
+                        "enable": false,
+                        "speed": 40,
+                        "size_min": 0.1,
+                        "sync": false
+                    }
+                },
+                "line_linked": {
+                    "enable": true,
+                    "distance": 150,
+                    "color": "#6c5ce7",
+                    "opacity": 0.4,
+                    "width": 1
+                },
+                "move": {
+                    "enable": true,
+                    "speed": 2,
+                    "direction": "none",
+                    "random": false,
+                    "straight": false,
+                    "out_mode": "out",
+                    "bounce": false,
+                    "attract": {
+                        "enable": false,
+                        "rotateX": 600,
+                        "rotateY": 1200
+                    }
+                }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": {
+                    "onhover": {
+                        "enable": true,
+                        "mode": "grab"
+                    },
+                    "onclick": {
+                        "enable": true,
+                        "mode": "push"
+                    },
+                    "resize": true
+                },
+                "modes": {
+                    "grab": {
+                        "distance": 140,
+                        "line_linked": {
+                            "opacity": 1
+                        }
+                    },
+                    "bubble": {
+                        "distance": 400,
+                        "size": 40,
+                        "duration": 2,
+                        "opacity": 8,
+                        "speed": 3
+                    },
+                    "repulse": {
+                        "distance": 200,
+                        "duration": 0.4
+                    },
+                    "push": {
+                        "particles_nb": 4
+                    },
+                    "remove": {
+                        "particles_nb": 2
+                    }
+                }
+            },
+            "retina_detect": true
         });
 
         // Efecto ripple para botones
@@ -510,21 +826,78 @@
                 
                 setTimeout(() => {
                     ripple.remove();
-                }, 600);
+                }, 800);
             });
         });
 
         // Mostrar nombre del archivo seleccionado
         document.getElementById('csv_file').addEventListener('change', function(e) {
-            const fileName = e.target.files[0]?.name || 'Seleccionar archivo CSV';
+            const file = e.target.files[0];
+            const fileName = file?.name || 'Seleccionar archivo CSV';
             document.getElementById('file-label').textContent = fileName;
+            
+            // Mostrar vista previa si es una imagen
+            const preview = document.getElementById('file-preview');
+            if (file && file.type.match('image.*')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('d-none');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.classList.add('d-none');
+            }
             
             // Animación cuando se selecciona un archivo
             const label = document.querySelector('.file-input-label');
             label.style.animation = 'none';
             void label.offsetWidth; // Trigger reflow
-            label.style.animation = 'bounce 0.5s';
+            label.style.animation = 'bounce 0.6s';
         });
+
+        // Crear efecto de confeti
+        function createConfetti() {
+            const colors = ['#6c5ce7', '#a29bfe', '#fd79a8', '#00b894', '#fdcb6e'];
+            const container = document.querySelector('.card-body');
+            
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.classList.add('confetti');
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.top = -10 + 'px';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+                confetti.style.width = Math.random() * 10 + 5 + 'px';
+                confetti.style.height = Math.random() * 10 + 5 + 'px';
+                
+                container.appendChild(confetti);
+                
+                const animationDuration = Math.random() * 3 + 2;
+                
+                confetti.style.animation = `confetti-fall ${animationDuration}s linear forwards`;
+                
+                // Definir la animación de caída
+                const keyframes = `
+                    @keyframes confetti-fall {
+                        to {
+                            transform: translateY(${window.innerHeight}px) rotate(${Math.random() * 360}deg);
+                            opacity: 0;
+                        }
+                    }
+                `;
+                
+                const style = document.createElement('style');
+                style.innerHTML = keyframes;
+                document.head.appendChild(style);
+                
+                // Eliminar el confeti después de la animación
+                setTimeout(() => {
+                    confetti.remove();
+                    style.remove();
+                }, animationDuration * 1000);
+            }
+        }
 
         document.getElementById('uploadForm').addEventListener('submit', function (event) {
             event.preventDefault();
@@ -546,9 +919,9 @@
             progressContainer.classList.add('d-none');
             progressBar.style.width = '0%';
             progressPercent.textContent = '0%';
-            progressText.innerHTML = '<i class="bi bi-info-circle-fill me-2 animate-pulse" style="color: var(--primary);"></i><span>Procesando tu archivo, por favor espera...</span>';
+            progressText.innerHTML = '<i class="bi bi-hourglass-split me-2 animate-pulse" style="color: var(--primary);"></i><span>Procesando tu archivo, por favor espera...</span>';
             processButton.disabled = true;
-            processButton.innerHTML = '<i class="bi bi-hourglass-top me-2"></i> Procesando...';
+            processButton.innerHTML = '<i class="bi bi-hourglass-split me-2"></i> Procesando...';
 
             // Crear FormData para enviar el archivo
             const formData = new FormData();
@@ -583,7 +956,7 @@
                     progressBar.style.width = `${percentComplete}%`;
                     progressBar.setAttribute('aria-valuenow', percentComplete);
                     progressPercent.textContent = `${percentComplete}%`;
-                    progressText.innerHTML = `<i class="bi bi-cloud-upload-fill me-2" style="color: var(--primary);"></i><span>Subiendo archivo... ${percentComplete}%</span>`;
+                    progressText.innerHTML = `<i class="bi bi-cloud-arrow-up-fill me-2" style="color: var(--primary);"></i><span>Subiendo archivo... ${percentComplete}%</span>`;
                 }
             };
 
@@ -605,13 +978,16 @@
 
                         // Mostrar mensaje de éxito
                         messageDiv.textContent = '¡Archivo procesado con éxito! Los resultados se están descargando...';
-                        messageDiv.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
+                        messageDiv.style.backgroundColor = 'rgba(0, 184, 148, 0.1)';
                         messageDiv.style.color = 'var(--success)';
                         messageDiv.classList.remove('d-none');
                         messageDiv.classList.add('animate__fadeIn');
                         downloadLink.href = link.href;
                         downloadLink.classList.remove('d-none');
                         downloadLink.classList.add('animate__fadeIn');
+                        
+                        // Efecto de confeti
+                        createConfetti();
                     }, 800);
                 } else {
                     progressText.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2" style="color: var(--error);"></i><span>Error al procesar el archivo</span>';
@@ -623,7 +999,7 @@
                 }
 
                 processButton.disabled = false;
-                processButton.innerHTML = '<i class="bi bi-gear-fill me-2"></i> Procesar Archivo';
+                processButton.innerHTML = '<i class="bi bi-magic me-2"></i> Procesar Archivo';
             };
 
             xhr.onerror = function () {
@@ -634,7 +1010,7 @@
                 messageDiv.classList.remove('d-none');
                 messageDiv.classList.add('animate__fadeIn');
                 processButton.disabled = false;
-                processButton.innerHTML = '<i class="bi bi-gear-fill me-2"></i> Procesar Archivo';
+                processButton.innerHTML = '<i class="bi bi-magic me-2"></i> Procesar Archivo';
             };
 
             xhr.send(formData);
