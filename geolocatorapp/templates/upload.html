@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoIP Tool | Geolocalización de IPs</title>
+    <!-- Bootstrap 5 con íconos -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Animate.css y AOS (Animate On Scroll) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #a5b4fc;
+            --secondary: #10b981;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --gray: #94a3b8;
+            --card-bg: #ffffff;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--dark);
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-brand:hover {
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+        
+        .main-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            padding: 2rem 0;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.1);
+            overflow: hidden;
+            background: var(--card-bg);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: perspective(1000px) rotateY(0deg);
+        }
+        
+        .card:hover {
+            transform: perspective(1000px) rotateY(5deg) translateY(-10px);
+            box-shadow: 0 15px 35px rgba(99, 102, 241, 0.2);
+        }
+        
+        .card-header {
+            background: var(--gradient);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            border-bottom: none;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card-header::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+            transform: rotate(30deg);
+            animation: shine 3s infinite;
+        }
+        
+        .card-title {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .card-subtitle {
+            font-weight: 400;
+            opacity: 0.9;
+            font-size: 0.9rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .card-body {
+            padding: 2rem;
+        }
+        
+        .btn-primary {
+            background: var(--gradient);
+            border: none;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 4px 6px rgba(99, 102, 241, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 15px rgba(99, 102, 241, 0.2);
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(1px);
+        }
+        
+        .file-input-container {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        
+        .file-input-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            background-color: rgba(99, 102, 241, 0.05);
+            border: 2px dashed var(--primary-light);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .file-input-label:hover {
+            background-color: rgba(99, 102, 241, 0.1);
+            border-color: var(--primary);
+            animation: pulse-border 1.5s infinite;
+        }
+        
+        .file-input-label i {
+            margin-right: 12px;
+            color: var(--primary);
+            font-size: 1.75rem;
+            transition: all 0.3s ease;
+        }
+        
+        #csv_file {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .progress-container {
+            background: rgba(248, 250, 252, 0.8);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(99, 102, 241, 0.1);
+        }
+        
+        .progress {
+            height: 12px;
+            border-radius: 6px;
+            background-color: #e2e8f0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            background: var(--gradient);
+            transition: width 0.6s ease;
+            position: relative;
+        }
+        
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                            rgba(255,255,255,0) 0%, 
+                            rgba(255,255,255,0.3) 50%, 
+                            rgba(255,255,255,0) 100%);
+            animation: progress-shine 2s infinite;
+        }
+        
+        .status-message {
+            padding: 1rem;
+            border-radius: 12px;
+            font-weight: 500;
+            margin-top: 1.5rem;
+            text-align: center;
+            transition: all 0.4s ease;
+        }
+        
+        .download-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            background-color: var(--success);
+            color: white !important;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            width: 100%;
+            margin-top: 1rem;
+            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.1);
+        }
+        
+        .download-link:hover {
+            background-color: #0d9e6f;
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 15px rgba(16, 185, 129, 0.2);
+            color: white;
+            animation: bounce 0.5s;
+        }
+        
+        .footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            font-size: 0.9rem;
+            position: relative;
+        }
+        
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient);
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(99, 102, 241, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: var(--primary);
+            font-size: 1.75rem;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-icon:hover {
+            transform: rotate(15deg) scale(1.1);
+            background: rgba(99, 102, 241, 0.2);
+        }
+        
+        .developer-credit {
+            display: inline-flex;
+            align-items: center;
+            color: var(--gray);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+        
+        .developer-credit:hover {
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+        
+        .developer-credit i {
+            margin-right: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .card-body {
+                padding: 1.5rem;
+            }
+            
+            .card-title {
+                font-size: 1.3rem;
+            }
+            
+            .feature-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+            }
+            
+            .card:hover {
+                transform: none;
+                box-shadow: 0 10px 30px rgba(99, 102, 241, 0.1);
+            }
+        }
+        
+        /* Animaciones personalizadas */
+        @keyframes pulse-border {
+            0% { border-color: var(--primary-light); }
+            50% { border-color: var(--primary); }
+            100% { border-color: var(--primary-light); }
+        }
+        
+        @keyframes progress-shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        @keyframes shine {
+            0% { transform: rotate(30deg) translate(-10%, -10%); }
+            100% { transform: rotate(30deg) translate(10%, 10%); }
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0) scale(1.02); }
+            50% { transform: translateY(-5px) scale(1.05); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        /* Efecto de onda al hacer clic */
+        .ripple {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .ripple-effect {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+        
+        @keyframes ripple {
+            to {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#" data-aos="fade-right">
+                <i class="bi bi-geo-alt-fill me-2" style="color: var(--primary);"></i>
+                GeoIP Tool
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item" data-aos="fade-left" data-aos-delay="100">
+                        <a class="nav-link" href="#"><i class="bi bi-info-circle me-1"></i> Acerca de</a>
+                    </li>
+                    <li class="nav-item" data-aos="fade-left" data-aos-delay="200">
+                        <a class="nav-link" href="#"><i class="bi bi-question-circle me-1"></i> Ayuda</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="main-container">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card animate__animated animate__fadeIn" data-aos="zoom-in">
+                        <div class="card-header">
+                            <h1 class="card-title">Geolocalización de IPs</h1>
+                            <p class="card-subtitle">Procesa archivos CSV con direcciones IP para obtener datos geográficos</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center mb-4">
+                                <div class="feature-icon floating">
+                                    <i class="bi bi-cloud-arrow-up"></i>
+                                </div>
+                                <h3 class="mb-3" data-aos="fade-up">Cargar archivo CSV</h3>
+                                <p class="text-muted" data-aos="fade-up" data-aos-delay="100">Sube un archivo CSV con direcciones IP para comenzar el análisis</p>
+                            </div>
+                            
+                            <form id="uploadForm" enctype="multipart/form-data" data-aos="fade-up" data-aos-delay="200">
+                                <div class="file-input-container">
+                                    <label for="csv_file" class="file-input-label ripple">
+                                        <i class="bi bi-file-earmark-spreadsheet"></i>
+                                        <span id="file-label">Seleccionar archivo CSV</span>
+                                    </label>
+                                    <input type="file" id="csv_file" name="csv_file" required accept=".csv">
+                                </div>
+                                <small class="text-muted d-block text-center mb-4" data-aos="fade-up" data-aos-delay="300">Formatos soportados: .csv (Máx. 10MB)</small>
+                                
+                                <button type="submit" class="btn btn-primary w-100 py-3 ripple" id="processButton" data-aos="fade-up" data-aos-delay="400">
+                                    <i class="bi bi-gear-fill me-2"></i> Procesar Archivo
+                                </button>
+                            </form>
+                            
+                            <div class="progress-container mt-4 d-none animate__animated animate__fadeIn" id="progressContainer" data-aos="fade-up">
+                                <div class="d-flex justify-content-between mb-3">
+                                    <span class="text-muted fw-medium">Progreso</span>
+                                    <span class="text-primary fw-bold" id="progressPercent">0%</span>
+                                </div>
+                                <div class="progress mb-3">
+                                    <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <p id="progressText" class="text-center text-muted mb-0">
+                                    <i class="bi bi-info-circle-fill me-2 animate-pulse" style="color: var(--primary);"></i>
+                                    <span>Procesando tu archivo, por favor espera...</span>
+                                </p>
+                            </div>
+                            
+                            <div id="message" class="status-message d-none animate__animated animate__fadeIn" data-aos="fade-up"></div>
+                            
+                            <a id="downloadLink" class="download-link d-none ripple" href="#" data-aos="fade-up">
+                                <i class="bi bi-download me-2"></i> Descargar resultados
+                            </a>
+                            
+                            <a href="https://github.com/RaulOrtiz99" target="_blank" class="developer-credit" data-aos="fade-up" data-aos-delay="500">
+                                <i class="bi bi-code-square"></i> Desarrollado por: RaulOrtiz99
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 text-md-start">
+                    <p class="mb-0">© 2023 GeoIP Tool. Todos los derechos reservados.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0">
+                        <a href="#" class="text-white text-decoration-none me-3">Términos</a>
+                        <a href="#" class="text-white text-decoration-none">Privacidad</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- AOS (Animate On Scroll) -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Inicializar AOS
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+
+        // Efecto ripple para botones
+        document.querySelectorAll('.ripple').forEach(button => {
+            button.addEventListener('click', function(e) {
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const ripple = document.createElement('span');
+                ripple.classList.add('ripple-effect');
+                ripple.style.left = `${x}px`;
+                ripple.style.top = `${y}px`;
+                
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+
+        // Mostrar nombre del archivo seleccionado
+        document.getElementById('csv_file').addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name || 'Seleccionar archivo CSV';
+            document.getElementById('file-label').textContent = fileName;
+            
+            // Animación cuando se selecciona un archivo
+            const label = document.querySelector('.file-input-label');
+            label.style.animation = 'none';
+            void label.offsetWidth; // Trigger reflow
+            label.style.animation = 'bounce 0.5s';
+        });
+
+        document.getElementById('uploadForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const fileInput = document.getElementById('csv_file');
+            const progressBar = document.getElementById('progressBar');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressText = document.getElementById('progressText');
+            const progressPercent = document.getElementById('progressPercent');
+            const messageDiv = document.getElementById('message');
+            const downloadLink = document.getElementById('downloadLink');
+            const processButton = document.getElementById('processButton');
+
+            // Limpiar mensajes anteriores
+            messageDiv.classList.add('d-none');
+            messageDiv.classList.remove('alert-success', 'alert-danger');
+            downloadLink.classList.add('d-none');
+            progressContainer.classList.add('d-none');
+            progressBar.style.width = '0%';
+            progressPercent.textContent = '0%';
+            progressText.innerHTML = '<i class="bi bi-info-circle-fill me-2 animate-pulse" style="color: var(--primary);"></i><span>Procesando tu archivo, por favor espera...</span>';
+            processButton.disabled = true;
+            processButton.innerHTML = '<i class="bi bi-hourglass-top me-2"></i> Procesando...';
+
+            // Crear FormData para enviar el archivo
+            const formData = new FormData();
+            formData.append('csv_file', fileInput.files[0]);
+
+            // Mostrar la barra de progreso con animación
+            setTimeout(() => {
+                progressContainer.classList.remove('d-none');
+                progressContainer.classList.add('animate__fadeIn');
+            }, 100);
+
+            // Simular progreso incremental
+            let progress = 0;
+            const interval = setInterval(() => {
+                if (progress >= 90) {
+                    clearInterval(interval); // Detener el incremento al llegar al 90%
+                } else {
+                    progress += 10; // Incrementar en 10%
+                    progressBar.style.width = `${progress}%`;
+                    progressBar.setAttribute('aria-valuenow', progress);
+                    progressPercent.textContent = `${progress}%`;
+                }
+            }, 500);
+
+            // Enviar el archivo mediante AJAX
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/', true);
+
+            xhr.upload.onprogress = function (event) {
+                if (event.lengthComputable) {
+                    const percentComplete = Math.round((event.loaded / event.total) * 100);
+                    progressBar.style.width = `${percentComplete}%`;
+                    progressBar.setAttribute('aria-valuenow', percentComplete);
+                    progressPercent.textContent = `${percentComplete}%`;
+                    progressText.innerHTML = `<i class="bi bi-cloud-upload-fill me-2" style="color: var(--primary);"></i><span>Subiendo archivo... ${percentComplete}%</span>`;
+                }
+            };
+
+            xhr.onload = function () {
+                clearInterval(interval); // Detener el intervalo de simulación
+
+                if (xhr.status === 200) {
+                    progressBar.style.width = '100%';
+                    progressPercent.textContent = '100%';
+                    progressText.innerHTML = '<i class="bi bi-check-circle-fill me-2" style="color: var(--success);"></i><span>Procesamiento completado con éxito</span>';
+                    
+                    setTimeout(() => {
+                        // Descargar el archivo CSV generado
+                        const blob = new Blob([xhr.response], { type: 'text/csv' });
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = 'geolocation_results.csv';
+                        link.click();
+
+                        // Mostrar mensaje de éxito
+                        messageDiv.textContent = '¡Archivo procesado con éxito! Los resultados se están descargando...';
+                        messageDiv.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
+                        messageDiv.style.color = 'var(--success)';
+                        messageDiv.classList.remove('d-none');
+                        messageDiv.classList.add('animate__fadeIn');
+                        downloadLink.href = link.href;
+                        downloadLink.classList.remove('d-none');
+                        downloadLink.classList.add('animate__fadeIn');
+                    }, 800);
+                } else {
+                    progressText.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2" style="color: var(--error);"></i><span>Error al procesar el archivo</span>';
+                    messageDiv.textContent = 'Ocurrió un error al procesar el archivo. Por favor, verifica el formato e inténtalo de nuevo.';
+                    messageDiv.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+                    messageDiv.style.color = 'var(--error)';
+                    messageDiv.classList.remove('d-none');
+                    messageDiv.classList.add('animate__fadeIn');
+                }
+
+                processButton.disabled = false;
+                processButton.innerHTML = '<i class="bi bi-gear-fill me-2"></i> Procesar Archivo';
+            };
+
+            xhr.onerror = function () {
+                progressText.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2" style="color: var(--error);"></i><span>Error de conexión</span>';
+                messageDiv.textContent = 'Error de conexión con el servidor. Verifica tu conexión a internet e inténtalo nuevamente.';
+                messageDiv.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+                messageDiv.style.color = 'var(--error)';
+                messageDiv.classList.remove('d-none');
+                messageDiv.classList.add('animate__fadeIn');
+                processButton.disabled = false;
+                processButton.innerHTML = '<i class="bi bi-gear-fill me-2"></i> Procesar Archivo';
+            };
+
+            xhr.send(formData);
+        });
+    </script>
+</body>
+</html>
