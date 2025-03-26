@@ -7,6 +7,15 @@ from django.shortcuts import render
 # Tu clave de API de IPInfo
 API_KEY = '3b5c89838fc09c'
 
+# Variable global para almacenar el estado del procesamiento
+processing_state = {
+    "total_ips": 0,
+    "processed_ips": 0,
+    "current_ip": "",
+    "progress": 0,
+    "completed": False,
+}
+
 # Función para validar si una cadena es una dirección IP válida
 def is_valid_ip(ip):
     parts = ip.split('.')
@@ -16,6 +25,11 @@ def is_valid_ip(ip):
         if not part.isdigit() or not 0 <= int(part) <= 255:
             return False
     return True
+
+# Vista para obtener el estado del procesamiento
+@csrf_exempt
+def get_processing_status(request):
+    return JsonResponse(processing_state)
 
 # Vista principal para cargar el archivo CSV
 @csrf_exempt
@@ -66,6 +80,13 @@ def upload_csv(request):
             total_ips = len(ips)
             print(f"Total de IPs válidas para procesar: {total_ips}")
 
+            # Actualizar el estado inicial del procesamiento
+            processing_state["total_ips"] = total_ips
+            processing_state["processed_ips"] = 0
+            processing_state["current_ip"] = ""
+            processing_state["progress"] = 0
+            processing_state["completed"] = False
+
             # Consultar la API de IPInfo para obtener datos geográficos
             results = []
             processed_ips = 0
@@ -90,6 +111,14 @@ def upload_csv(request):
                 except Exception as e:
                     print(f"Error al procesar la IP {ip}: {e}")
                     results.append([ip, '', '', '', '', ''])
+
+                # Actualizar el estado del procesamiento
+                processing_state["processed_ips"] = processed_ips
+                processing_state["current_ip"] = ip
+                processing_state["progress"] = int((processed_ips / total_ips) * 100)
+
+            # Marcar como completado
+            processing_state["completed"] = True
 
             # Crear un archivo CSV con los resultados
             response = HttpResponse(content_type='text/csv')

@@ -39,6 +39,10 @@
         .file-input-container input[type="file"] {
             display: none;
         }
+        .download-button {
+            display: none;
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -71,8 +75,12 @@
                             <div class="progress mb-3">
                                 <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%;"></div>
                             </div>
+                            <small class="text-muted" id="current-ip">Procesando IP: <span id="current-ip-value">-</span></small>
                         </div>
                         <div id="message" class="status-message"></div>
+                        <button id="downloadButton" class="btn btn-success w-100 download-button" onclick="downloadFile()">
+                            <i class="bi bi-download me-2"></i> Descargar Resultados
+                        </button>
                     </div>
                 </div>
             </div>
@@ -89,6 +97,10 @@
         const progressBar = document.getElementById('progressBar');
         const progressPercent = document.getElementById('progressPercent');
         const messageDiv = document.getElementById('message');
+        const downloadButton = document.getElementById('downloadButton');
+        const currentIpValue = document.getElementById('current-ip-value');
+
+        let downloadUrl = null;
 
         // Permitir seleccionar archivo haciendo clic en el área de carga
         uploadArea.addEventListener('click', () => fileInput.click());
@@ -121,6 +133,40 @@
             }
         });
 
+        // Función para descargar el archivo manualmente
+        function downloadFile() {
+            if (downloadUrl) {
+                window.location.href = downloadUrl;
+            }
+        }
+
+        // Función para obtener el estado del procesamiento
+        function fetchProcessingStatus() {
+            fetch('/get_processing_status/', { method: 'GET' })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.completed) {
+                        // Actualizar la barra de progreso y la IP actual
+                        progressBar.style.width = `${data.progress}%`;
+                        progressPercent.textContent = `${data.progress}%`;
+                        currentIpValue.textContent = data.current_ip || '-';
+                        // Continuar solicitando actualizaciones
+                        setTimeout(fetchProcessingStatus, 500);
+                    } else {
+                        // Procesamiento completado
+                        progressBar.style.width = '100%';
+                        progressPercent.textContent = '100%';
+                        currentIpValue.textContent = 'Procesamiento completado';
+
+                        // Habilitar el botón de descarga manual
+                        downloadButton.classList.remove('d-none');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al obtener el estado:', error);
+                });
+        }
+
         // Manejar el envío del formulario
         document.getElementById('uploadForm').addEventListener('submit', function (event) {
             event.preventDefault();
@@ -135,6 +181,8 @@
             progressContainer.classList.remove('d-none');
             progressBar.style.width = '0%';
             progressPercent.textContent = '0%';
+            currentIpValue.textContent = '-';
+            downloadButton.classList.add('d-none');
 
             // Deshabilitar el botón de procesamiento
             processButton.disabled = true;
@@ -144,40 +192,34 @@
             const formData = new FormData();
             formData.append('csv_file', fileInput.files[0]);
 
-            // Crear y configurar la petición AJAX
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', '/', true);
-            xhr.responseType = 'blob'; // Esperamos un archivo binario de respuesta
+            // Enviar la solicitud al backend
+            fetch('/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok && response.headers.get('content-type').includes('text/csv')) {
+                    return response.blob().then(blob => {
+                        downloadUrl = URL.createObjectURL(blob);
 
-            // Barra de progreso para la subida
-            xhr.upload.onprogress = function (e) {
-                if (e.lengthComputable) {
-                    const percent = Math.round((e.loaded / e.total) * 100);
-                    progressBar.style.width = `${percent}%`;
-                    progressPercent.textContent = `${percent}%`;
-                }
-            };
+                        // Mostrar mensaje de éxito
+                        messageDiv.textContent = '¡Archivo procesado con éxito!';
+                        messageDiv.className = 'status-message success show';
+                        messageDiv.classList.remove('d-none');
 
-            // Manejar la respuesta del servidor
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    // Descargar automáticamente el archivo
-                    const blob = new Blob([xhr.response], { type: 'text/csv' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'processed_results.csv';
-                    document.body.appendChild(a);
-                    a.click();
-                    a.remove();
-                    setTimeout(() => URL.revokeObjectURL(url), 100);
+                        // Mostrar el botón de descarga manual
+                        downloadButton.classList.remove('d-none');
 
-                    // Mostrar mensaje de éxito
-                    messageDiv.textContent = '¡Archivo procesado con éxito! La descarga comenzará automáticamente.';
-                    messageDiv.className = 'status-message success show';
+                        // Descargar automáticamente el archivo
+                        const a = document.createElement('a');
+                        a.href = downloadUrl;
+                        a.download = 'processed_results.csv';
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                    });
                 } else {
-                    try {
-                        const data = JSON.parse(xhr.responseText);
+                    return response.json().then(data => {
                         if (data.error) {
                             messageDiv.textContent = data.error;
                             messageDiv.className = 'status-message error show';
@@ -185,29 +227,21 @@
                             messageDiv.innerHTML = `<strong>Advertencias:</strong><br>${data.errors}`;
                             messageDiv.className = 'status-message warning show';
                         }
-                    } catch (e) {
-                        messageDiv.textContent = 'Ocurrió un error inesperado al procesar el archivo.';
-                        messageDiv.className = 'status-message error show';
-                    }
+                    });
                 }
-
-                // Habilitar el botón de procesamiento
-                processButton.disabled = false;
-                processButton.innerHTML = '<i class="bi bi-lightning-charge-fill me-2"></i> Procesar Archivo';
-            };
-
-            // Manejar errores de conexión
-            xhr.onerror = function () {
-                messageDiv.textContent = 'Error de conexión con el servidor. Verifica tu conexión a internet e inténtalo nuevamente.';
+            })
+            .catch(error => {
+                messageDiv.textContent = 'Error de conexión con el servidor.';
                 messageDiv.className = 'status-message error show';
-
+            })
+            .finally(() => {
                 // Habilitar el botón de procesamiento
                 processButton.disabled = false;
                 processButton.innerHTML = '<i class="bi bi-lightning-charge-fill me-2"></i> Procesar Archivo';
-            };
+            });
 
-            // Enviar la solicitud
-            xhr.send(formData);
+            // Iniciar la obtención del estado del procesamiento
+            fetchProcessingStatus();
         });
     </script>
 </body>
