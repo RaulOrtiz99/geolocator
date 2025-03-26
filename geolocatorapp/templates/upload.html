@@ -3,255 +3,309 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GeoIP Pro | Procesador Avanzado de IPs</title>
-    <!-- Bootstrap CSS + Íconos -->
+    <title>GeoIP Turbo | Procesador de IPs</title>
+    <!-- Bootstrap 5 + Íconos -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #4e73df;
-            --primary-dark: #2e59d9;
-            --primary-light: #9fb5ff;
-            --success: #1cc88a;
-            --warning: #f6c23e;
-            --danger: #e74a3b;
-            --dark: #5a5c69;
-            --light: #f8f9fc;
-            --card-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+            --primary: #6e3bdb;
+            --primary-dark: #5a2dbb;
+            --primary-light: #9d75e6;
+            --secondary: #4caf50;
+            --secondary-dark: #3d8b40;
+            --secondary-light: #81c784;
+            --dark: #2d3748;
+            --light: #ffffff;
+            --gray-light: #f8f9fa;
+            --gray-medium: #e9ecef;
         }
         
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8f9fc;
-            color: var(--dark);
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
-        }
-        
-        .container {
-            max-width: 600px;
+            align-items: center;
+            color: var(--dark);
         }
         
         .card {
             border: none;
-            border-radius: 0.35rem;
-            box-shadow: var(--card-shadow);
+            border-radius: 16px;
+            box-shadow: 0 12px 30px rgba(110, 59, 219, 0.15);
             overflow: hidden;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            background-color: var(--light);
         }
         
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 0.5rem 1.5rem rgba(58, 59, 69, 0.2);
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(110, 59, 219, 0.2);
         }
         
         .card-header {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: white;
-            padding: 1.5rem;
+            padding: 2rem;
             text-align: center;
-            border-bottom: none;
+            position: relative;
+            overflow: hidden;
         }
         
-        .card-title {
+        .card-header::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            transform: rotate(30deg);
+            animation: shine 6s infinite linear;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%) rotate(30deg); }
+            100% { transform: translateX(100%) rotate(30deg); }
+        }
+        
+        .card-header h3 {
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            position: relative;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .card-header p {
+            opacity: 0.9;
+            font-weight: 300;
+            position: relative;
+        }
+        
+        .upload-area {
+            border: 2px dashed var(--primary-light);
+            border-radius: 12px;
+            padding: 2.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(110, 59, 219, 0.03);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .upload-area:hover {
+            background: rgba(110, 59, 219, 0.08);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+        
+        .upload-area.active {
+            border-color: var(--secondary);
+            background: rgba(76, 175, 80, 0.05);
+        }
+        
+        .upload-area i {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            transition: all 0.3s ease;
+        }
+        
+        .upload-area:hover i {
+            transform: scale(1.1);
+            color: var(--primary-dark);
+        }
+        
+        .upload-area h5 {
             font-weight: 600;
             margin-bottom: 0.5rem;
-            font-size: 1.5rem;
+            color: var(--dark);
         }
         
-        .card-subtitle {
-            font-weight: 400;
-            opacity: 0.9;
+        .upload-area p {
+            color: #6c757d;
             font-size: 0.9rem;
         }
         
         .btn-primary {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             border: none;
+            padding: 1rem 2rem;
             font-weight: 600;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.35rem;
-            transition: all 0.3s ease;
             letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(110, 59, 219, 0.3);
+            position: relative;
+            overflow: hidden;
         }
         
         .btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 0.5rem 1rem rgba(78, 115, 223, 0.25);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(110, 59, 219, 0.4);
         }
         
-        .file-input-container {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-            width: 100%;
-            margin-bottom: 1.5rem;
+        .btn-primary:active {
+            transform: translateY(1px);
         }
         
-        .file-input-label {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1.5rem;
-            background-color: rgba(78, 115, 223, 0.05);
-            border: 2px dashed var(--primary-light);
-            border-radius: 0.35rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .file-input-label:hover {
-            background-color: rgba(78, 115, 223, 0.1);
-            border-color: var(--primary);
-        }
-        
-        .file-input-label i {
-            margin-right: 10px;
-            color: var(--primary);
-            font-size: 1.5rem;
-        }
-        
-        #csv_file {
+        .btn-primary::after {
+            content: "";
             position: absolute;
-            left: 0;
             top: 0;
-            opacity: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            cursor: pointer;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
         }
         
-        .progress-container {
-            background: var(--light);
-            border-radius: 0.35rem;
-            padding: 1.5rem;
-            margin-top: 1.5rem;
-            border: 1px solid rgba(0, 0, 0, 0.05);
+        .btn-primary:hover::after {
+            transform: translateX(100%);
         }
         
         .progress {
-            height: 1rem;
-            border-radius: 0.35rem;
-            background-color: #eaecf4;
+            height: 10px;
+            border-radius: 5px;
+            background-color: var(--gray-medium);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
         }
         
         .progress-bar {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             transition: width 0.6s ease;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-bar::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+            animation: progressShine 2s infinite linear;
+        }
+        
+        @keyframes progressShine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
         
         .status-message {
-            padding: 1rem;
-            border-radius: 0.35rem;
+            padding: 1.25rem;
+            border-radius: 10px;
             font-weight: 500;
+            display: none;
             margin-top: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             transition: all 0.3s ease;
         }
         
-        .status-message.success {
-            background-color: rgba(28, 200, 138, 0.1);
-            color: var(--success);
-            border-left: 4px solid var(--success);
+        .status-message.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
         }
         
-        .status-message.warning {
-            background-color: rgba(246, 194, 62, 0.1);
-            color: var(--warning);
-            border-left: 4px solid var(--warning);
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
-        .status-message.error {
-            background-color: rgba(231, 74, 59, 0.1);
-            color: var(--danger);
-            border-left: 4px solid var(--danger);
+        .success {
+            background-color: rgba(76, 175, 80, 0.1);
+            color: var(--secondary-dark);
+            border-left: 4px solid var(--secondary);
         }
         
-        .download-link {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.35rem;
-            background-color: var(--success);
-            color: white !important;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            width: 100%;
-            margin-top: 1.5rem;
+        .error {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #d32f2f;
+            border-left: 4px solid #d32f2f;
         }
         
-        .download-link:hover {
-            background-color: #17a673;
-            transform: translateY(-2px);
-            box-shadow: 0 0.5rem 1rem rgba(28, 200, 138, 0.25);
-            color: white;
+        /* Animación de carga */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
-        .feature-icon {
-            width: 60px;
-            height: 60px;
+        .spinner {
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        
+        /* Efecto de onda al hacer clic */
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        .ripple-effect {
+            position: absolute;
             border-radius: 50%;
-            background: rgba(78, 115, 223, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1.5rem;
-            color: var(--primary);
-            font-size: 1.75rem;
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .card-header {
+                padding: 1.5rem;
+            }
+            
+            .upload-area {
+                padding: 1.5rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container my-5">
+    <div class="container py-5">
         <div class="row justify-content-center">
-            <div class="col-lg-8">
+            <div class="col-md-8 col-lg-6">
                 <div class="card">
                     <div class="card-header">
-                        <div class="feature-icon">
-                            <i class="bi bi-geo-alt-fill"></i>
-                        </div>
-                        <h1 class="card-title">Procesador de IPs</h1>
-                        <p class="card-subtitle">Convierte direcciones IP en datos geolocalizados</p>
+                        <h3><i class="bi bi-geo-alt-fill me-2"></i> GeoIP Turbo</h3>
+                        <p class="mb-0">Procesamiento ultra rápido de IPs</p>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body p-4">
                         <form id="uploadForm" enctype="multipart/form-data">
-                            <div class="file-input-container">
-                                <label for="csv_file" class="file-input-label">
-                                    <i class="bi bi-file-earmark-spreadsheet"></i>
-                                    <span id="file-label">Seleccionar archivo CSV</span>
-                                </label>
-                                <input type="file" id="csv_file" name="csv_file" required accept=".csv">
+                            <div class="upload-area mb-4" id="uploadArea">
+                                <i class="bi bi-cloud-arrow-up-fill mb-3"></i>
+                                <h5 id="file-label">Arrastra tu archivo CSV aquí</h5>
+                                <p class="text-muted small">o haz clic para seleccionar</p>
+                                <input type="file" id="csv_file" name="csv_file" required accept=".csv" class="d-none">
                             </div>
-                            <small class="text-muted d-block text-center mb-4">Formatos soportados: .csv (Máx. 10MB)</small>
                             
                             <button type="submit" class="btn btn-primary w-100 py-3" id="processButton">
-                                <i class="bi bi-gear-fill me-2"></i> Procesar Archivo
+                                <i class="bi bi-lightning-charge-fill me-2"></i> Procesar Ahora
                             </button>
                         </form>
                         
-                        <div class="progress-container mt-4 d-none" id="progressContainer">
-                            <div class="d-flex justify-content-between mb-3">
-                                <span class="text-muted fw-medium">Progreso</span>
-                                <span class="text-primary fw-bold" id="progressPercent">0%</span>
+                        <div id="progressContainer" class="mt-4 d-none">
+                            <div class="d-flex justify-content-between mb-2">
+                                <small class="text-muted">Progreso</small>
+                                <small class="text-primary fw-bold" id="progressPercent">0%</small>
                             </div>
                             <div class="progress mb-3">
-                                <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%;"></div>
                             </div>
-                            <p id="progressText" class="text-center text-muted mb-0">
-                                <i class="bi bi-hourglass me-2"></i> Procesando tu archivo...
-                            </p>
                         </div>
                         
-                        <div id="message" class="status-message d-none"></div>
-                        
-                        <a id="downloadLink" class="download-link d-none" href="#">
-                            <i class="bi bi-download me-2"></i> Descargar resultados
-                        </a>
+                        <div id="message" class="status-message"></div>
                     </div>
                 </div>
             </div>
@@ -261,102 +315,154 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Manejar el área de upload
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('csv_file');
+        
+        // Efecto ripple para botones
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.btn-primary')) {
+                const btn = e.target.closest('.btn-primary');
+                const rect = btn.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const ripple = document.createElement('span');
+                ripple.classList.add('ripple-effect');
+                ripple.style.left = `${x}px`;
+                ripple.style.top = `${y}px`;
+                
+                btn.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            }
+        });
+        
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        // Mostrar nombre del archivo seleccionado
+        fileInput.addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name || 'Arrastra tu archivo CSV aquí';
+            document.getElementById('file-label').textContent = fileName;
+            
+            // Efecto visual al seleccionar archivo
+            uploadArea.classList.add('active');
+            uploadArea.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                uploadArea.style.transform = 'scale(1)';
+            }, 200);
+            
+            // Quitar la clase active después de 1 segundo
+            setTimeout(() => {
+                uploadArea.classList.remove('active');
+            }, 1000);
+        });
+
+        // Efecto hover para el área de upload
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.background = 'rgba(110, 59, 219, 0.1)';
+            uploadArea.style.borderColor = 'var(--primary)';
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.background = 'rgba(110, 59, 219, 0.03)';
+            uploadArea.style.borderColor = 'var(--primary-light)';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.background = 'rgba(110, 59, 219, 0.03)';
+            uploadArea.style.borderColor = 'var(--primary-light)';
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                const event = new Event('change');
+                fileInput.dispatchEvent(event);
+            }
+        });
+
+        // Procesar el formulario
         document.getElementById('uploadForm').addEventListener('submit', function (event) {
             event.preventDefault();
 
-            const form = event.target;
-            const fileInput = document.getElementById('csv_file');
-            const progressBar = document.getElementById('progressBar');
-            const progressContainer = document.getElementById('progressContainer');
-            const progressText = document.getElementById('progressText');
-            const progressPercent = document.getElementById('progressPercent');
-            const messageDiv = document.getElementById('message');
-            const downloadLink = document.getElementById('downloadLink');
-            const processButton = document.getElementById('processButton');
-
-            // Limpiar mensajes anteriores
-            messageDiv.classList.add('d-none');
-            downloadLink.classList.add('d-none');
-            progressContainer.classList.remove('d-none');
-            progressBar.style.width = '0%';
-            progressPercent.textContent = '0%';
-            progressText.innerHTML = '<i class="bi bi-hourglass me-2"></i> Procesando tu archivo...';
-            processButton.disabled = true;
-            processButton.innerHTML = '<i class="bi bi-hourglass-split me-2"></i> Procesando...';
-
-            // Crear FormData para enviar el archivo
             const formData = new FormData();
             formData.append('csv_file', fileInput.files[0]);
 
-            // Simular progreso incremental
-            let progress = 0;
-            const interval = setInterval(() => {
-                if (progress >= 90) {
-                    clearInterval(interval);
-                } else {
-                    progress += 10;
-                    progressBar.style.width = `${progress}%`;
-                    progressBar.setAttribute('aria-valuenow', progress);
-                    progressPercent.textContent = `${progress}%`;
-                }
-            }, 500);
+            const processButton = document.getElementById('processButton');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            const progressPercent = document.getElementById('progressPercent');
+            const messageDiv = document.getElementById('message');
 
-            fetch('/', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => {
-                clearInterval(interval);
+            // Resetear UI
+            messageDiv.className = 'status-message';
+            messageDiv.style.display = 'none';
+            progressContainer.classList.remove('d-none');
+            progressBar.style.width = '0%';
+            progressPercent.textContent = '0%';
+            processButton.disabled = true;
+            processButton.innerHTML = '<span class="spinner me-2"><i class="bi bi-arrow-repeat"></i></span> Procesando...';
+
+            // Crear y configurar la petición AJAX
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/', true);
+            xhr.responseType = 'blob'; // Esperamos un archivo binario de respuesta
+
+            // Barra de progreso para la subida
+            xhr.upload.onprogress = function(e) {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    progressBar.style.width = `${percent}%`;
+                    progressPercent.textContent = `${percent}%`;
+                }
+            };
+
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    // Descargar automáticamente el archivo
+                    const blob = new Blob([xhr.response], { type: 'text/csv' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'resultados_geolocalizacion.csv';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    setTimeout(() => URL.revokeObjectURL(url), 100);
+                    
+                    // Mostrar mensaje de éxito
+                    messageDiv.textContent = '¡Archivo procesado con éxito! La descarga comenzará automáticamente.';
+                    messageDiv.className = 'status-message success show';
+                    
+                    // Efecto de confeti visual
+                    uploadArea.innerHTML += '<div class="confetti"></div>';
+                    setTimeout(() => {
+                        document.querySelector('.confetti')?.remove();
+                    }, 3000);
+                } else {
+                    // Mostrar error simple
+                    messageDiv.textContent = 'Error en el procesamiento. Intenta nuevamente.';
+                    messageDiv.className = 'status-message error show';
+                }
                 
-                if (!response.ok) {
-                    throw new Error('Error de conexión con el servidor.');
-                }
-                return response.json();
-            })
-            .then(data => {
-                progressBar.style.width = '100%';
-                progressPercent.textContent = '100%';
-                progressText.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i> Procesamiento completado';
-
-                if (data.error) {
-                    messageDiv.textContent = data.error;
-                    messageDiv.className = 'status-message error';
-                    messageDiv.classList.remove('d-none');
-                } else if (data.warnings) {
-                    messageDiv.innerHTML = `<strong>Proceso completado:</strong> ${data.message}<br><br><strong>Advertencias:</strong><br>${data.warnings}`;
-                    messageDiv.className = 'status-message warning';
-                    messageDiv.classList.remove('d-none');
-                } else {
-                    messageDiv.textContent = data.message || 'Archivo procesado con éxito';
-                    messageDiv.className = 'status-message success';
-                    messageDiv.classList.remove('d-none');
-                }
-
-                if (data.file) {
-                    downloadLink.href = URL.createObjectURL(new Blob([data.file]));
-                    downloadLink.textContent = 'Descargar resultados';
-                    downloadLink.classList.remove('d-none');
-                }
-            })
-            .catch(error => {
-                progressText.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2"></i> Error al procesar';
-                messageDiv.textContent = error.message || 'Ocurrió un error inesperado.';
-                messageDiv.className = 'status-message error';
-                messageDiv.classList.remove('d-none');
-            })
-            .finally(() => {
-                setTimeout(() => {
-                    progressContainer.classList.add('d-none');
-                }, 1000);
+                // Resetear UI
+                progressContainer.classList.add('d-none');
                 processButton.disabled = false;
-                processButton.innerHTML = '<i class="bi bi-gear-fill me-2"></i> Procesar Archivo';
-            });
-        });
+                processButton.innerHTML = '<i class="bi bi-lightning-charge-fill me-2"></i> Procesar Ahora';
+            };
 
-        // Mostrar nombre del archivo seleccionado
-        document.getElementById('csv_file').addEventListener('change', function(e) {
-            const fileName = e.target.files[0]?.name || 'Seleccionar archivo CSV';
-            document.getElementById('file-label').textContent = fileName;
+            xhr.onerror = function() {
+                messageDiv.textContent = 'Error de conexión. Verifica tu internet.';
+                messageDiv.className = 'status-message error show';
+                
+                progressContainer.classList.add('d-none');
+                processButton.disabled = false;
+                processButton.innerHTML = '<i class="bi bi-lightning-charge-fill me-2"></i> Procesar Ahora';
+            };
+
+            xhr.send(formData);
         });
     </script>
 </body>
