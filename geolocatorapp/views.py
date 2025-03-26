@@ -1,8 +1,8 @@
 import csv
 import requests
-from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render
 
 # Tu clave de API de IPInfo
 API_KEY = '3b5c89838fc09c'
@@ -33,7 +33,7 @@ def upload_csv(request):
 
             # Extraer las IPs válidas (sin duplicados)
             ips = set()
-            invalid_rows = []  # Para almacenar filas inválidas
+            invalid_rows = []  # Para almacenar mensajes de error específicos
             row_count = 0
 
             for row in reader:
@@ -47,6 +47,11 @@ def upload_csv(request):
                     # Obtener la IP de la segunda columna
                     ip = row[1].strip()
 
+                    # Detectar si la fila es una cabecera
+                    if ip.lower() in ['ip', 'ip address', 'email']:
+                        print(f"Fila {row_count}: Cabecera detectada y omitida ({ip}).")
+                        continue
+
                     # Validar la IP
                     if not ip or '@' in ip or not is_valid_ip(ip):
                         invalid_rows.append(f"Fila {row_count}: IP inválida o correo electrónico ignorado ({ip}).")
@@ -57,11 +62,18 @@ def upload_csv(request):
                 except Exception as e:
                     invalid_rows.append(f"Fila {row_count}: Error al procesar fila ({row}): {str(e)}")
 
+            print(f"IPs válidas encontradas (sin duplicados): {ips}")
+            total_ips = len(ips)
+            print(f"Total de IPs válidas para procesar: {total_ips}")
+
             # Consultar la API de IPInfo para obtener datos geográficos
             results = []
+            processed_ips = 0
+
             for ip in ips:
+                processed_ips += 1
                 try:
-                    print(f"Consultando API para la IP {ip}...")
+                    print(f"Consultando API para la IP {ip}... ({processed_ips}/{total_ips})")
                     url = f'https://ipinfo.io/{ip}?token={API_KEY}'
                     response = requests.get(url)
                     data = response.json()
