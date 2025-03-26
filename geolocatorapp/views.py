@@ -30,15 +30,32 @@ def upload_csv(request):
             # Leer el archivo CSV cargado
             decoded_file = uploaded_file.read().decode('utf-8').splitlines()
             reader = csv.reader(decoded_file)
-            header = next(reader)  # Saltar la cabecera
 
             # Extraer las IPs válidas (sin duplicados)
             ips = set()
+            invalid_rows = []  # Para almacenar filas inválidas
+            row_count = 0
+
             for row in reader:
-                if len(row) > 1:  # Asegurarse de que la fila tenga al menos 2 columnas
+                row_count += 1
+                try:
+                    # Verificar que la fila tenga al menos 2 columnas
+                    if len(row) < 2:
+                        invalid_rows.append(f"Fila {row_count}: Fila incompleta ignorada ({row}).")
+                        continue
+
+                    # Obtener la IP de la segunda columna
                     ip = row[1].strip()
-                    if ip and '@' not in ip and is_valid_ip(ip):  # Ignorar correos electrónicos e IPs inválidas
-                        ips.add(ip)
+
+                    # Validar la IP
+                    if not ip or '@' in ip or not is_valid_ip(ip):
+                        invalid_rows.append(f"Fila {row_count}: IP inválida o correo electrónico ignorado ({ip}).")
+                        continue
+
+                    # Agregar la IP válida al conjunto
+                    ips.add(ip)
+                except Exception as e:
+                    invalid_rows.append(f"Fila {row_count}: Error al procesar fila ({row}): {str(e)}")
 
             # Consultar la API de IPInfo para obtener datos geográficos
             results = []
@@ -72,7 +89,17 @@ def upload_csv(request):
             writer.writerows(results)
 
             print("Proceso completado. El archivo 'processed_results.csv' ha sido creado.")
-            return response
+
+            # Incluir un resumen de errores en la respuesta JSON
+            if invalid_rows:
+                error_summary = "Se encontraron errores en las siguientes filas:\n" + "\n".join(invalid_rows)
+                print(error_summary)
+                return JsonResponse({
+                    'message': 'Archivo procesado con éxito.',
+                    'errors': error_summary,
+                }, status=200)
+            else:
+                return response
         except Exception as e:
             print(f"Error general: {str(e)}")
             return JsonResponse({'error': str(e)}, status=400)
