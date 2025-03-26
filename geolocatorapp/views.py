@@ -33,7 +33,7 @@ def upload_csv(request):
 
             # Extraer las IPs válidas (sin duplicados)
             ips = set()
-            invalid_rows = []  # Para almacenar mensajes de error específicos
+            invalid_rows = []  # Para almacenar mensajes de advertencia específicos
             row_count = 0
 
             for row in reader:
@@ -49,7 +49,7 @@ def upload_csv(request):
 
                     # Detectar si la fila es una cabecera
                     if ip.lower() in ['ip', 'ip address', 'email']:
-                        print(f"Fila {row_count}: Cabecera detectada y omitida ({ip}).")
+                        invalid_rows.append(f"Fila {row_count}: Cabecera detectada y omitida ({ip}).")
                         continue
 
                     # Validar la IP
@@ -102,13 +102,13 @@ def upload_csv(request):
 
             print("Proceso completado. El archivo 'processed_results.csv' ha sido creado.")
 
-            # Incluir un resumen de errores en la respuesta JSON
+            # Incluir un resumen de advertencias en la respuesta JSON
             if invalid_rows:
-                error_summary = "Se encontraron errores en las siguientes filas:\n" + "\n".join(invalid_rows)
-                print(error_summary)
+                warning_summary = "Se encontraron advertencias en las siguientes filas:\n" + "\n".join(invalid_rows)
+                print(warning_summary)
                 return JsonResponse({
                     'message': 'Archivo procesado con éxito.',
-                    'errors': error_summary,
+                    'warnings': warning_summary,
                 }, status=200)
             else:
                 return response
