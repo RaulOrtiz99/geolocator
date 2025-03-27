@@ -302,6 +302,13 @@
             margin-right: 5px;
         }
         
+        .time-remaining {
+            font-size: 0.85rem;
+            color: var(--gray);
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+        
         @media (max-width: 768px) {
             .card-body {
                 padding: 1.5rem;
@@ -447,9 +454,13 @@
                                     <i class="bi bi-info-circle-fill me-2 animate-pulse" style="color: var(--primary);"></i>
                                     <span>Procesando tu archivo, por favor espera...</span>
                                 </p>
+                                <p id="timeRemaining" class="time-remaining"></p>
+                                <p id="processedInfo" class="text-center text-muted small mt-2"></p>
                             </div>
                             
                             <div id="message" class="status-message d-none animate__animated animate__fadeIn" data-aos="fade-up"></div>
+                            
+                            <div id="errorContainer" class="status-message d-none animate__animated animate__fadeIn" style="background-color: rgba(239, 68, 68, 0.1); color: var(--error);" data-aos="fade-up"></div>
                             
                             <a id="downloadLink" class="download-link d-none ripple" href="#" data-aos="fade-up">
                                 <i class="bi bi-download me-2"></i> Descargar resultados
@@ -487,157 +498,380 @@
     <!-- AOS (Animate On Scroll) -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
-        // Inicializar AOS
-        AOS.init({
-            duration: 800,
-            easing: 'ease-in-out',
-            once: true
-        });
-
-        // Efecto ripple para botones
-        document.querySelectorAll('.ripple').forEach(button => {
-            button.addEventListener('click', function(e) {
-                const rect = this.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                
-                const ripple = document.createElement('span');
-                ripple.classList.add('ripple-effect');
-                ripple.style.left = `${x}px`;
-                ripple.style.top = `${y}px`;
-                
-                this.appendChild(ripple);
-                
-                setTimeout(() => {
-                    ripple.remove();
-                }, 600);
+        // Variables para el cálculo del tiempo restante
+        let startTime;
+        let lastProgress = 0;
+        let lastUpdateTime;
+        let processingInterval;
+        
+        // Inicializar AOS con manejo de errores
+        try {
+            AOS.init({
+                duration: 800,
+                easing: 'ease-in-out',
+                once: true
             });
-        });
+        } catch (e) {
+            console.warn("Error al inicializar AOS:", e);
+        }
 
-        // Mostrar nombre del archivo seleccionado
-        document.getElementById('csv_file').addEventListener('change', function(e) {
-            const fileName = e.target.files[0]?.name || 'Seleccionar archivo CSV';
-            document.getElementById('file-label').textContent = fileName;
-            
-            // Animación cuando se selecciona un archivo
-            const label = document.querySelector('.file-input-label');
-            label.style.animation = 'none';
-            void label.offsetWidth; // Trigger reflow
-            label.style.animation = 'bounce 0.5s';
-        });
+        // Efecto ripple para botones con manejo de errores
+        function setupRippleEffects() {
+            try {
+                document.querySelectorAll('.ripple').forEach(button => {
+                    button.addEventListener('click', function(e) {
+                        try {
+                            const rect = this.getBoundingClientRect();
+                            const x = e.clientX - rect.left;
+                            const y = e.clientY - rect.top;
+                            
+                            const ripple = document.createElement('span');
+                            ripple.classList.add('ripple-effect');
+                            ripple.style.left = `${x}px`;
+                            ripple.style.top = `${y}px`;
+                            
+                            this.appendChild(ripple);
+                            
+                            setTimeout(() => {
+                                try {
+                                    ripple.remove();
+                                } catch (e) {
+                                    console.warn("Error al remover ripple:", e);
+                                }
+                            }, 600);
+                        } catch (e) {
+                            console.warn("Error en efecto ripple:", e);
+                        }
+                    });
+                });
+            } catch (e) {
+                console.warn("Error al configurar efectos ripple:", e);
+            }
+        }
 
-        document.getElementById('uploadForm').addEventListener('submit', function (event) {
-            event.preventDefault();
-
-            const form = event.target;
-            const fileInput = document.getElementById('csv_file');
-            const progressBar = document.getElementById('progressBar');
-            const progressContainer = document.getElementById('progressContainer');
-            const progressText = document.getElementById('progressText');
-            const progressPercent = document.getElementById('progressPercent');
-            const messageDiv = document.getElementById('message');
-            const downloadLink = document.getElementById('downloadLink');
-            const processButton = document.getElementById('processButton');
-
-            // Limpiar mensajes anteriores
-            messageDiv.classList.add('d-none');
-            messageDiv.classList.remove('alert-success', 'alert-danger');
-            downloadLink.classList.add('d-none');
-            progressContainer.classList.add('d-none');
-            progressBar.style.width = '0%';
-            progressPercent.textContent = '0%';
-            progressText.innerHTML = '<i class="bi bi-info-circle-fill me-2 animate-pulse" style="color: var(--primary);"></i><span>Procesando tu archivo, por favor espera...</span>';
-            processButton.disabled = true;
-            processButton.innerHTML = '<i class="bi bi-hourglass-top me-2"></i> Procesando...';
-
-            // Crear FormData para enviar el archivo
-            const formData = new FormData();
-            formData.append('csv_file', fileInput.files[0]);
-
-            // Mostrar la barra de progreso con animación
-            setTimeout(() => {
-                progressContainer.classList.remove('d-none');
-                progressContainer.classList.add('animate__fadeIn');
-            }, 100);
-
-            // Simular progreso incremental
-            let progress = 0;
-            const interval = setInterval(() => {
-                if (progress >= 90) {
-                    clearInterval(interval); // Detener el incremento al llegar al 90%
-                } else {
-                    progress += 10; // Incrementar en 10%
-                    progressBar.style.width = `${progress}%`;
-                    progressBar.setAttribute('aria-valuenow', progress);
-                    progressPercent.textContent = `${progress}%`;
+        // Mostrar nombre del archivo seleccionado con manejo de errores
+        function setupFileInput() {
+            try {
+                const fileInput = document.getElementById('csv_file');
+                if (fileInput) {
+                    fileInput.addEventListener('change', function(e) {
+                        try {
+                            const fileName = e.target.files[0]?.name || 'Seleccionar archivo CSV';
+                            const fileLabel = document.getElementById('file-label');
+                            if (fileLabel) {
+                                fileLabel.textContent = fileName;
+                            }
+                            
+                            // Animación cuando se selecciona un archivo
+                            const label = document.querySelector('.file-input-label');
+                            if (label) {
+                                label.style.animation = 'none';
+                                void label.offsetWidth; // Trigger reflow
+                                label.style.animation = 'bounce 0.5s';
+                            }
+                        } catch (e) {
+                            console.warn("Error al manejar cambio de archivo:", e);
+                        }
+                    });
                 }
-            }, 500);
+            } catch (e) {
+                console.warn("Error al configurar file input:", e);
+            }
+        }
 
-            // Enviar el archivo mediante AJAX
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', '/', true);
-
-            xhr.upload.onprogress = function (event) {
-                if (event.lengthComputable) {
-                    const percentComplete = Math.round((event.loaded / event.total) * 100);
-                    progressBar.style.width = `${percentComplete}%`;
-                    progressBar.setAttribute('aria-valuenow', percentComplete);
-                    progressPercent.textContent = `${percentComplete}%`;
-                    progressText.innerHTML = `<i class="bi bi-cloud-upload-fill me-2" style="color: var(--primary);"></i><span>Subiendo archivo... ${percentComplete}%</span>`;
+        // Función para mostrar errores
+        function showError(message) {
+            try {
+                const errorDiv = document.getElementById('errorContainer');
+                if (errorDiv) {
+                    errorDiv.textContent = message;
+                    errorDiv.classList.remove('d-none');
+                    errorDiv.classList.add('animate__fadeIn');
                 }
-            };
+            } catch (e) {
+                console.warn("Error al mostrar mensaje de error:", e);
+            }
+        }
 
-            xhr.onload = function () {
-                clearInterval(interval); // Detener el intervalo de simulación
-
-                if (xhr.status === 200) {
-                    progressBar.style.width = '100%';
-                    progressPercent.textContent = '100%';
-                    progressText.innerHTML = '<i class="bi bi-check-circle-fill me-2" style="color: var(--success);"></i><span>Procesamiento completado con éxito</span>';
-                    
-                    setTimeout(() => {
-                        // Descargar el archivo CSV generado
-                        const blob = new Blob([xhr.response], { type: 'text/csv' });
-                        const link = document.createElement('a');
-                        link.href = URL.createObjectURL(blob);
-                        link.download = 'geolocation_results.csv';
-                        link.click();
-
-                        // Mostrar mensaje de éxito
-                        messageDiv.textContent = '¡Archivo procesado con éxito! Los resultados se están descargando...';
-                        messageDiv.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
-                        messageDiv.style.color = 'var(--success)';
-                        messageDiv.classList.remove('d-none');
-                        messageDiv.classList.add('animate__fadeIn');
-                        downloadLink.href = link.href;
-                        downloadLink.classList.remove('d-none');
-                        downloadLink.classList.add('animate__fadeIn');
-                    }, 800);
-                } else {
-                    progressText.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2" style="color: var(--error);"></i><span>Error al procesar el archivo</span>';
-                    messageDiv.textContent = 'Ocurrió un error al procesar el archivo. Por favor, verifica el formato e inténtalo de nuevo.';
-                    messageDiv.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
-                    messageDiv.style.color = 'var(--error)';
+        // Función para mostrar éxito
+        function showSuccess(message) {
+            try {
+                const messageDiv = document.getElementById('message');
+                if (messageDiv) {
+                    messageDiv.textContent = message;
+                    messageDiv.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
+                    messageDiv.style.color = 'var(--success)';
                     messageDiv.classList.remove('d-none');
                     messageDiv.classList.add('animate__fadeIn');
                 }
+            } catch (e) {
+                console.warn("Error al mostrar mensaje de éxito:", e);
+            }
+        }
 
-                processButton.disabled = false;
-                processButton.innerHTML = '<i class="bi bi-gear-fill me-2"></i> Procesar Archivo';
-            };
+        // Función para calcular y mostrar el tiempo restante
+        function updateTimeRemaining(progress, totalIps, processedIps) {
+            try {
+                const now = new Date().getTime();
+                const timeElapsed = (now - startTime) / 1000; // en segundos
+                
+                if (progress > 0 && progress < 100) {
+                    const estimatedTotalTime = (timeElapsed * 100) / progress;
+                    const remainingTime = estimatedTotalTime - timeElapsed;
+                    
+                    const timeRemainingElement = document.getElementById('timeRemaining');
+                    if (timeRemainingElement) {
+                        if (remainingTime > 60) {
+                            const minutes = Math.floor(remainingTime / 60);
+                            const seconds = Math.floor(remainingTime % 60);
+                            timeRemainingElement.textContent = `Tiempo estimado: ${minutes}m ${seconds}s`;
+                        } else {
+                            timeRemainingElement.textContent = `Tiempo estimado: ${Math.floor(remainingTime)}s`;
+                        }
+                    }
+                }
+                
+                const processedInfoElement = document.getElementById('processedInfo');
+                if (processedInfoElement && totalIps > 0) {
+                    processedInfoElement.textContent = `Procesadas: ${processedIps} de ${totalIps} IPs (${Math.floor(progress)}%)`;
+                }
+            } catch (e) {
+                console.warn("Error al calcular tiempo restante:", e);
+            }
+        }
 
-            xhr.onerror = function () {
-                progressText.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2" style="color: var(--error);"></i><span>Error de conexión</span>';
-                messageDiv.textContent = 'Error de conexión con el servidor. Verifica tu conexión a internet e inténtalo nuevamente.';
-                messageDiv.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
-                messageDiv.style.color = 'var(--error)';
-                messageDiv.classList.remove('d-none');
-                messageDiv.classList.add('animate__fadeIn');
-                processButton.disabled = false;
-                processButton.innerHTML = '<i class="bi bi-gear-fill me-2"></i> Procesar Archivo';
-            };
+        // Función para consultar el estado del procesamiento
+        function checkProcessingStatus(intervalId) {
+            try {
+                fetch('/get_processing_status/')
+                    .then(response => response.json())
+                    .then(data => {
+                        try {
+                            const progressBar = document.getElementById('progressBar');
+                            const progressPercent = document.getElementById('progressPercent');
+                            const progressText = document.getElementById('progressText');
+                            const downloadLink = document.getElementById('downloadLink');
+                            const processButton = document.getElementById('processButton');
 
-            xhr.send(formData);
+                            const progress = data.progress || 0;
+                            const totalIps = data.total_ips || 0;
+                            const processedIps = data.processed_ips || 0;
+                            
+                            // Actualizar la barra de progreso
+                            if (progressBar && progressPercent) {
+                                progressBar.style.width = `${progress}%`;
+                                progressBar.setAttribute('aria-valuenow', progress);
+                                progressPercent.textContent = `${progress}%`;
+                            }
+
+                            // Actualizar información de progreso
+                            if (progressText) {
+                                if (data.completed) {
+                                    progressText.innerHTML = '<i class="bi bi-check-circle-fill me-2" style="color: var(--success);"></i><span>Procesamiento completado con éxito</span>';
+                                    
+                                    // Detener el intervalo
+                                    clearInterval(intervalId);
+                                    clearInterval(processingInterval);
+                                    
+                                    // Habilitar el botón
+                                    if (processButton) {
+                                        processButton.disabled = false;
+                                        processButton.innerHTML = '<i class="bi bi-gear-fill me-2"></i> Procesar Archivo';
+                                    }
+                                    
+                                    // Mostrar mensaje de éxito
+                                    showSuccess('¡Archivo procesado con éxito! Los resultados se están descargando...');
+                                    
+                                    // Descargar automáticamente el archivo
+                                    setTimeout(() => {
+                                        window.location.href = '/upload_csv/';
+                                    }, 1000);
+                                } else {
+                                    const currentIp = data.current_ip || '';
+                                    progressText.innerHTML = `<i class="bi bi-info-circle-fill me-2" style="color: var(--primary);"></i><span>Procesando IP: ${currentIp}</span>`;
+                                    
+                                    // Actualizar tiempo restante
+                                    updateTimeRemaining(progress, totalIps, processedIps);
+                                }
+                            }
+                        } catch (e) {
+                            console.warn("Error al actualizar UI con estado:", e);
+                        }
+                    })
+                    .catch(error => {
+                        console.warn("Error al consultar estado:", error);
+                    });
+            } catch (e) {
+                console.warn("Error en checkProcessingStatus:", e);
+            }
+        }
+
+        // Configurar el formulario de subida con manejo robusto de errores
+        function setupUploadForm() {
+            try {
+                const uploadForm = document.getElementById('uploadForm');
+                if (!uploadForm) return;
+
+                uploadForm.addEventListener('submit', function (event) {
+                    event.preventDefault();
+
+                    try {
+                        const fileInput = document.getElementById('csv_file');
+                        const progressBar = document.getElementById('progressBar');
+                        const progressContainer = document.getElementById('progressContainer');
+                        const progressText = document.getElementById('progressText');
+                        const progressPercent = document.getElementById('progressPercent');
+                        const messageDiv = document.getElementById('message');
+                        const errorDiv = document.getElementById('errorContainer');
+                        const downloadLink = document.getElementById('downloadLink');
+                        const processButton = document.getElementById('processButton');
+                        const timeRemainingElement = document.getElementById('timeRemaining');
+                        const processedInfoElement = document.getElementById('processedInfo');
+
+                        // Validación básica del archivo
+                        if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+                            showError("Por favor selecciona un archivo primero.");
+                            return;
+                        }
+
+                        // Limpiar mensajes anteriores
+                        if (messageDiv) {
+                            messageDiv.classList.add('d-none');
+                            messageDiv.textContent = '';
+                        }
+                        if (errorDiv) {
+                            errorDiv.classList.add('d-none');
+                            errorDiv.textContent = '';
+                        }
+                        if (downloadLink) downloadLink.classList.add('d-none');
+                        if (progressContainer) progressContainer.classList.add('d-none');
+                        if (progressBar) progressBar.style.width = '0%';
+                        if (progressPercent) progressPercent.textContent = '0%';
+                        if (progressText) progressText.innerHTML = '<i class="bi bi-info-circle-fill me-2 animate-pulse" style="color: var(--primary);"></i><span>Procesando tu archivo, por favor espera...</span>';
+                        if (timeRemainingElement) timeRemainingElement.textContent = '';
+                        if (processedInfoElement) processedInfoElement.textContent = '';
+                        if (processButton) {
+                            processButton.disabled = true;
+                            processButton.innerHTML = '<i class="bi bi-hourglass-top me-2"></i> Procesando...';
+                        }
+
+                        // Iniciar temporizador para el tiempo restante
+                        startTime = new Date().getTime();
+                        lastProgress = 0;
+                        lastUpdateTime = startTime;
+
+                        // Mostrar la barra de progreso con animación
+                        setTimeout(() => {
+                            try {
+                                if (progressContainer) {
+                                    progressContainer.classList.remove('d-none');
+                                    progressContainer.classList.add('animate__fadeIn');
+                                }
+                            } catch (e) {
+                                console.warn("Error al mostrar progress container:", e);
+                            }
+                        }, 100);
+
+                        // Crear FormData para enviar el archivo
+                        const formData = new FormData();
+                        formData.append('csv_file', fileInput.files[0]);
+
+                        // Enviar el archivo mediante AJAX
+                        fetch('/upload_csv/', {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-CSRFToken': getCookie('csrftoken') || '',
+                            },
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Error en la respuesta del servidor');
+                            }
+                            return response.blob();
+                        })
+                        .then(blob => {
+                            // Iniciar la verificación del estado cada segundo
+                            const intervalId = setInterval(() => {
+                                checkProcessingStatus(intervalId);
+                            }, 1000);
+                            
+                            // Guardar el ID del intervalo para poder limpiarlo luego
+                            processingInterval = intervalId;
+                        })
+                        .catch(error => {
+                            console.error("Error en la solicitud:", error);
+                            showError("Error al enviar el archivo al servidor");
+                            if (processButton) {
+                                processButton.disabled = false;
+                                processButton.innerHTML = '<i class="bi bi-gear-fill me-2"></i> Procesar Archivo';
+                            }
+                            if (processingInterval) {
+                                clearInterval(processingInterval);
+                            }
+                        });
+
+                    } catch (e) {
+                        console.error("Error en submit handler:", e);
+                        showError("Ocurrió un error inesperado. Por favor inténtalo de nuevo.");
+                        const processButton = document.getElementById('processButton');
+                        if (processButton) {
+                            processButton.disabled = false;
+                            processButton.innerHTML = '<i class="bi bi-gear-fill me-2"></i> Procesar Archivo';
+                        }
+                        if (processingInterval) {
+                            clearInterval(processingInterval);
+                        }
+                    }
+                });
+
+            } catch (e) {
+                console.error("Error al configurar upload form:", e);
+            }
+        }
+
+        // Función para obtener cookies
+        function getCookie(name) {
+            try {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            } catch (e) {
+                console.warn("Error al obtener cookie:", e);
+                return null;
+            }
+        }
+
+        // Inicializar todos los componentes cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                setupRippleEffects();
+                setupFileInput();
+                setupUploadForm();
+            } catch (e) {
+                console.error("Error en inicialización general:", e);
+            }
+        });
+
+        // Manejar errores no capturados globalmente
+        window.addEventListener('error', function(e) {
+            console.warn("Error no capturado:", e.error || e.message);
+            return true; // Prevenir que aparezca en la consola del navegador
+        });
+
+        // Manejar promesas no capturadas
+        window.addEventListener('unhandledrejection', function(e) {
+            console.warn("Promesa no capturada:", e.reason);
+            e.preventDefault(); // Prevenir que aparezca en la consola del navegador
         });
     </script>
 </body>
