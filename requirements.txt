@@ -9,3 +9,10 @@ requests==2.32.3
 sqlparse==0.5.3
 typing_extensions==4.12.2
 urllib3==2.3.0
+
+# Paquetes adicionales recomendados para producción
+whitenoise==6.6.0  # Para manejo de archivos estáticos
+psycopg2-binary==2.9.9  # Para PostgreSQL en Railway
+dj-database-url==2.1.0  # Para manejar DATABASE_URL
+redis==5.0.3  # Si vas a usar Redis para manejo de estado
+python-dotenv==1.0.1  # Para manejo de variables de entorno en desarrollo
